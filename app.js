@@ -1,10 +1,28 @@
 var request = require('request'), 
-	cheerio = require('cheerio');
+    cheerio = require('cheerio');
 
-//Загружаем страницу
-request({uri:'http://www.amazon.com/', method:'GET'},
-    function (err, res, page) {
-        var $=cheerio.load(page);
-        var img_src=$('html').html();
-        console.log(img_src);
+var debug = true;
+
+
+var fetchUrlList = function (url, cb) {
+    request({uri: url, method:'GET'}, function (err, res, page) {
+        var $ = cheerio.load(page);
+        var items = $('html ul.items_catalog li.span4 div.description a').map(function (i, element) {
+            if (!$(this).hasClass('count_response')) {
+                
+                if (debug) console.log(i, $(this).text(), $(this).attr('href'));
+                return {
+                    text: $(this).text(),
+                    href: $(this).attr('href')
+                };
+            }
+        });
+        cb(items);
     });
+};
+
+fetchUrlList(url1, function (items) {
+    items.map(function (i, el) {
+        console.log('-i', el);
+    })
+});
